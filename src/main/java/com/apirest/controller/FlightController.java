@@ -7,6 +7,7 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,7 +30,7 @@ public class FlightController {
     }
 
 
-    @GetMapping
+    @GetMapping(value = "/listar", produces = MediaType.APPLICATION_JSON_VALUE)
     public CollectionModel<EntityModel<Flight>> getAll() {
         List<EntityModel<Flight>> vuelos = this.flightService.listFlights().stream()
                 .map(hateoasConfig::toModel).collect(Collectors.toList());
@@ -38,27 +39,27 @@ public class FlightController {
         );
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(value="/get-id/{id}", produces = MediaType.APPLICATION_JSON_VALUE )
     public ResponseEntity<EntityModel<Flight>> getOne(@PathVariable("id") Long id) {
         Flight flight = this.flightService.getFlightById(id);
         return new ResponseEntity<>(hateoasConfig.toModel(flight), HttpStatus.OK);
     }
 
-    @PostMapping
+    @PostMapping(value = "/crear", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EntityModel<Flight>> add(@RequestBody Flight flight) {
         Flight savedflight = this.flightService.createFlight(flight);
         EntityModel<Flight> model = hateoasConfig.toModel(savedflight);
         return ResponseEntity.created(linkTo(methodOn(FlightController.class).getOne(savedflight.getId())).toUri()).body(model);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(value="/actualizar/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EntityModel<Flight>> updateFlight(@PathVariable Long id, @RequestBody Flight flight) {
         Flight updateFlight = this.flightService.updateFlight(id, flight);
         return new ResponseEntity<>(hateoasConfig.toModel(updateFlight), HttpStatus.OK);
     }
 
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/eliminar/{id}")
     public ResponseEntity<String> deleteFlight(@PathVariable("id") Long id) {
         this.flightService.deleteFlight(id);
         return new ResponseEntity<>("Vuelo Eliminado !! ", HttpStatus.OK);
